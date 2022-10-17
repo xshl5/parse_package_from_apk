@@ -1,0 +1,30 @@
+#!/system/bin/sh
+
+[ "$1" = "" ] && exit 1
+
+AXML_PRINTER_PATH=/system/bin/axmlprinter
+[ "$2" != "" ] && [ -e "$2" ] && AXML_PRINTER_PATH="$2"
+
+TMP_PATH=/data/local/tmp/.tmp_"$(date +%s_%N)" 
+mkdir -p $TMP_PATH
+unzip $1 AndroidManifest.xml -d $TMP_PATH >/dev/null 2>&1
+[ ! -e $TMP_PATH/AndroidManifest.xml ] && exit 2
+
+if [ -e $AXML_PRINTER_PATH ]; then
+	PKG_LINE=$(app_process -cp $AXML_PRINTER_PATH / com.genymobile.scrcpy.AXMLPrinter $TMP_PATH/AndroidManifest.xml | grep 'package="')
+	PKG_LINE=${PKG_LINE#*'package="'}
+	PKG_NAME=${PKG_LINE%%'"'*}
+else
+	TMP_FILE=$TMP_PATH/AM.xml
+	tr -d "\x00" < $TMP_PATH/AndroidManifest.xml > $TMP_FILE
+	PKG_LINE=$(busybox grep -o "[a-z\.]*" $TMP_FILE)
+	PKG_LINE=${PKG_LINE#*application}
+	PKG_LINE=$(echo $PKG_LINE | busybox grep -o "[a-z]*\.[a-z\.]*")
+	PKG_NAME=$(echo $PKG_LINE | cut -d' ' -f1)
+fi
+
+rm -rf $TMP_PATH
+
+[ "$PKG_NAME" != "" ] && echo $PKG_NAME && exit 0
+
+exit 3
