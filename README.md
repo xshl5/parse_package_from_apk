@@ -6,8 +6,6 @@ Parse package name from a apk file on the Android terminal
 
 >adb push axmlprinter.jar /data/local/tmp/
 
->adb shell chmod a+x /data/local/tmp/
-
 >adb shell chmod a+x /data/local/tmp/parse_package_from_apk
 
 >adb shell /data/local/tmp/parse_package_from_apk /system/app/KeyChain/KeyChain.apk
